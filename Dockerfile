@@ -1,16 +1,11 @@
-FROM alpine
-RUN apk add --no-cache sqlite3
-RUN apk add --no-cache python3-dev \
-    && pip3 install --upgrade pip3
+FROM python:3
 
-WORKDIR /app
+WORKDIR /usr/src/app
 
-COPY . /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip3 --no cache-dir install flask bcrypt mysql.connector urlparse pandas secrets
-RUN rc-service mariadb-start
+COPY . .
 
-
-CMD ['python3','init.py']
-
-CMD ['python3','app.py']
+CMD [ "python", "./init.py" ]
+CMD [ "python", "./app.py" ]
