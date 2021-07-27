@@ -1,56 +1,47 @@
 from flask import Flask,request,redirect,url_for
 import json
 from flask import render_template,session
-import mysql.connector
-from urllib.parse import urlparse 
+import sqlite3
 import json
 import pandas as pd
 import secrets
 import bcrypt
 
-#CREATE TABLE MAIN_SENSOR.USUARIOS (ID INT NOT NULL AUTO_INCREMENT,NOMBRE TEXT NOT NULL, APELLIDO TEXT NOT NULL,EMAIL TEXT NOT NULL, PASSWORD TEXT NOT NULL, CARGO TEXT, AREA TEXT, EMPRESA TEXT, ROL TEXT NOT NULL,PRIMARY KEY(ID));
-#INSERT INTO MAIN_SENSOR.USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,ROL) VALUES ('MIGUEL','AGUIRRE','miguelaguirreleon@gmail.com',MD5('12345'),'ADMINISTRADOR');
 app = Flask(__name__)	
 app.secret_key = secrets.token_urlsafe(20)
 
 user={ 'email':'','password':'','nombre':'','apellido':'','cargo':'','area':'','empresa':'','rol':''}
 
 def validar_usuario(user):
-    f=open('database.env')
-    dbc = urlparse(f.read())
-    f.close()
-    connection=mysql.connector.connect(host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
-    Query="SELECT PASSWORD FROM `USUARIOS` WHERE email=%(email)s ORDER BY ID DESC LIMIT 1"
-    cursor.execute(Query,user)
+    Query="SELECT PASSWORD FROM `USUARIOS` WHERE email='%(email)s' " % user
+    cursor.execute(Query)
     e=cursor.fetchone()
-    if cursor.rowcount>0:
+    cursor.close()
+    connection.close()    
+    try:
         hashed=e[0].encode('utf-8')
-        cursor.close()
-        connection.close()
         return bcrypt.checkpw(user['password'].encode('utf-8'), hashed)
-    else:
+    except:
         return False
 
 def check_usuario(user):
-    f=open('database.env')
-    dbc = urlparse(f.read())
-    f.close()
-    connection=mysql.connector.connect(host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
-    Query="SELECT PASSWORD FROM `USUARIOS` WHERE email=%(email)s ORDER BY ID DESC"
-    cursor.execute(Query,user)
+    Query="SELECT PASSWORD FROM `USUARIOS` WHERE email='%(email)s' " % user
+    cursor.execute(Query)
     e=cursor.fetchone()
-    if cursor.rowcount>0:
-        return True
-    else:
+    try:
+        if len(e[0])>0:
+            return True
+        else:
+            return False
+    except:
         return False
 
 def save_usuario(user):
-    f=open('database.env')
-    dbc = urlparse(f.read())
-    f.close()
-    connection=mysql.connector.connect(host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
     password = user['password'].encode('utf-8')
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
@@ -70,17 +61,14 @@ def save_usuario(user):
     return resp
 
 def update_usuario(user):
-    f=open('database.env')
-    dbc = urlparse(f.read())
-    f.close()
-    connection=mysql.connector.connect(host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
     password = user['npassword'].encode('utf-8')
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
     user['hashed'] = hashed.decode('UTF-8')
     print(hashed)
     print(user['hashed'])
-    Query="UPDATE MAIN_SENSOR.USUARIOS SET NOMBRE = '%(nombre)s', APELLIDO = '%(apellido)s' , CARGO = '%(cargo)s', PASSWORD = '%(hashed)s', AREA = '%(area)s', EMPRESA = '%(empresa)s', ROL = '%(rol)s' WHERE EMAIL = '%(email)s' " % user
+    Query="UPDATE USUARIOS SET NOMBRE = '%(nombre)s', APELLIDO = '%(apellido)s' , CARGO = '%(cargo)s', PASSWORD = '%(hashed)s', AREA = '%(area)s', EMPRESA = '%(empresa)s', ROL = '%(rol)s' WHERE EMAIL = '%(email)s' " % user
     cursor.execute(Query)
     connection.commit()
     cursor.close()
@@ -94,24 +82,21 @@ def update_usuario(user):
     return resp
 
 def get_usuario(email):
-    f=open('database.env')
-    dbc = urlparse(f.read())
-    f.close()
-    connection=mysql.connector.connect(host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
-    Query="SELECT * FROM `USUARIOS` WHERE email='%s' ORDER BY ID DESC LIMIT 1" % email
+    Query="SELECT * FROM `USUARIOS` WHERE email='%s' " % email
     cursor.execute(Query)
     data=cursor.fetchone()
     cursor.close()
     connection.close()
     user={}    
-    user['nombre']=data[1]
-    user['apellido']=data[2]
-    user['email']=data[3]
-    user['cargo']=data[5]
-    user['area']=data[6]
-    user['empresa']=data[7]
-    user['rol']=data[8]
+    user['nombre']=data[0]
+    user['apellido']=data[1]
+    user['email']=data[2]
+    user['cargo']=data[4]
+    user['area']=data[5]
+    user['empresa']=data[6]
+    user['rol']=data[7]
     user['password']=""
     message = {
         'status': 200,

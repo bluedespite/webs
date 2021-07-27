@@ -1,9 +1,7 @@
 FROM alpine
-RUN apk add --no-cache mariadb mariadb-common mariadb-client
+RUN apk add --no-cache sqlite3
 RUN apk add --no-cache python3-dev \
     && pip3 install --upgrade pip3
-RUN mysqladmin --no-defaults --port=3308 --user=root --protocol=tcp password '12345'
-RUN service mysql restart
 
 WORKDIR /app
 
