@@ -5,6 +5,8 @@ import sqlite3
 import json
 import secrets
 import bcrypt
+import init
+
 
 app = Flask(__name__)	
 app.secret_key = secrets.token_urlsafe(20)

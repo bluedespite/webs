@@ -7,6 +7,8 @@ password=npassword.encode('utf-8')
 hashed = bcrypt.hashpw(password, bcrypt.gensalt())
 connection=sqlite3.connect('main.db')
 cursor=connection.cursor()
+Query="DROP TABLE USUARIOS"
+cursor.execute(Query)
 Query="CREATE TABLE USUARIOS (NOMBRE TEXT NOT NULL, APELLIDO TEXT NOT NULL,EMAIL TEXT NOT NULL UNIQUE, PASSWORD TEXT NOT NULL, CARGO TEXT, AREA TEXT, EMPRESA TEXT, ROL TEXT NOT NULL);"
 cursor.execute(Query)
 Query="INSERT INTO USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,ROL) VALUES ('MIGUEL','AGUIRRE','miguelaguirreleon@gmail.com','%s','Administrador');" % hashed.decode('UTF-8')
