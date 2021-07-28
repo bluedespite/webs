@@ -22,8 +22,8 @@ def validar_usuario(user):
     cursor.close()
     connection.close()    
     try:
-        hashed=e[0].encode('utf-8')
-        return bcrypt.checkpw(user['password'].encode('utf-8'), hashed)
+        hashed=e[0]
+        return bcrypt.checkpw(user['password'], hashed)
     except:
         return False
 
@@ -44,9 +44,9 @@ def check_usuario(user):
 def save_usuario(user):
     connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
-    password = user['password'].encode('utf-8')
+    password = user['password']
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-    user['hashed'] = hashed.decode('UTF-8')
+    user['hashed'] = hashed
     Query="INSERT INTO MAIN_SENSOR.USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,CARGO, AREA, ROL,EMPRESA) VALUES ('%(nombre)s','%(apellido)s','%(email)s','%(hashed)s','%(cargo)s','%(area)s','%(rol)s','%(empresa)s')" %  user
     print(Query)
     cursor.execute(Query)
@@ -64,9 +64,9 @@ def save_usuario(user):
 def update_usuario(user):
     connection=sqlite3.connect('main.db')
     cursor=connection.cursor()
-    password = user['npassword'].encode('utf-8')
+    password = user['npassword']
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-    user['hashed'] = hashed.decode('UTF-8')
+    user['hashed'] = hashed
     print(hashed)
     print(user['hashed'])
     Query="UPDATE USUARIOS SET NOMBRE = '%(nombre)s', APELLIDO = '%(apellido)s' , CARGO = '%(cargo)s', PASSWORD = '%(hashed)s', AREA = '%(area)s', EMPRESA = '%(empresa)s', ROL = '%(rol)s' WHERE EMAIL = '%(email)s' " % user
