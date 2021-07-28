@@ -1,6 +1,7 @@
-FROM ubuntu
-RUN apt-get update
-RUN apt-get install -y python pip sqlite
+FROM alpine
+RUN apk update
+RUN apk add python3 python3-dev  autoconf automake g++ make py3-pip sqlite --no-cache
+RUN pip install bcrypt flask
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
