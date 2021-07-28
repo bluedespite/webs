@@ -2,13 +2,9 @@ import bcrypt
 import sqlite3
 from os import remove
 
-remove("main.db")
 npassword = "12345"
 password=npassword.encode('utf-8')
 hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-f=open('database.env')
-dbc = urlparse(f.read())
-f.close()
 connection=sqlite3.connect('main.db')
 cursor=connection.cursor()
 Query="CREATE TABLE USUARIOS (NOMBRE TEXT NOT NULL, APELLIDO TEXT NOT NULL,EMAIL TEXT NOT NULL UNIQUE, PASSWORD TEXT NOT NULL, CARGO TEXT, AREA TEXT, EMPRESA TEXT, ROL TEXT NOT NULL);"

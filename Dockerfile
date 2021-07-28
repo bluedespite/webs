@@ -1,5 +1,6 @@
-FROM python:3
-
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python pip sqlite
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./

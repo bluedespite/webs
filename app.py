@@ -3,7 +3,6 @@ import json
 from flask import render_template,session
 import sqlite3
 import json
-import pandas as pd
 import secrets
 import bcrypt
 
