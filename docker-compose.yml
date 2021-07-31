@@ -21,6 +21,7 @@ services:
         ports: 
          - "8080:80"
       appi:
+        links: mydb
         build: .
         ports: 
           - "80:80"
