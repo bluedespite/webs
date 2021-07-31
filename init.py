@@ -1,28 +1,26 @@
 import bcrypt
-import sqlite3
-from os import remove
+import mysql.connector
+from urllib.parse import urlparse
 
 password = "12345"
 hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-connection=sqlite3.connect('main.db')
+f=open("database.env")
+dbc = urlparse(f.read())
+f.close()
+connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
 cursor=connection.cursor()
-Query="DROP TABLE USUARIOS"
+Query="SHOW TABLES FROM MAIN_SENSOR"
 cursor.execute(Query)
-Query="CREATE TABLE USUARIOS (NOMBRE TEXT NOT NULL, APELLIDO TEXT NOT NULL,EMAIL TEXT NOT NULL UNIQUE, PASSWORD TEXT NOT NULL, CARGO TEXT, AREA TEXT, EMPRESA TEXT, ROL TEXT NOT NULL);"
-cursor.execute(Query)
-Query="INSERT INTO USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,ROL) VALUES ('MIGUEL','AGUIRRE','miguelaguirreleon@gmail.com','%s','Administrador');" % hashed
-cursor.execute(Query)
-connection.commit()
-Query="SELECT PASSWORD FROM USUARIOS WHERE EMAIL='miguelaguirreleon@gmail.com'"
-cursor.execute(Query)
-e=cursor.fetchone()
-hashed1=e[0].encode('utf-8')
-cursor.close()
-connection.close()
-# Hash a password for the first time, with a certain number of rounds
-# Check that a unhashed password matches one that has previously been
-#   hashed
-if bcrypt.checkpw(password.encode('utf-8'), hashed1):
-    print("It Matches!")
-else:
-    print("It Does not Match :(")
+e=cursor.fetchall()
+if len(e)<=0:
+    Query="CREATE TABLE USUARIOS (NOMBRE TEXT NOT NULL, APELLIDO TEXT NOT NULL,EMAIL TEXT NOT NULL UNIQUE, PASSWORD TEXT NOT NULL, CARGO TEXT, AREA TEXT, EMPRESA TEXT, ROL TEXT NOT NULL);"
+    cursor.execute(Query)
+    Query="CREATE TABLE DISPOSITIVOS (NOMBRE TEXT NOT NULL UNIQUE, DIRECCION TEXT NOT NULL, TOKEN TEXT NOT NULL);"
+    cursor.execute(Query)
+    Query="INSERT INTO USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,ROL) VALUES ('MIGUEL','AGUIRRE','miguelaguirreleon@gmail.com','%s','Administrador');" % hashed.decode('UTF-8')
+    cursor.execute(Query)
+    Query= "CREATE TABLE MAIN_SENSOR.DATA ( `ID` INT NOT NULL PRIMARY KEY AUTO_INCREMENT , `FECHA_HORA` DATETIME NOT NULL,`ID_ESTACION` TEXT NOT NULL ,`ESTACION` TEXT NOT NULL,`ID_TANQUE` TEXT NOT NULL,`TANQUE` TEXT NOT NULL,`PRODUCTO` TEXT NOT NULL,`DENSIDAD` TEXT NOT NULL,`TAG_SENSOR` TEXT NOT NULL,`DESCRIPCION` TEXT NOT NULL,`UM` TEXT NOT NULL, `RANGO_MIN` FLOAT NOT NULL, `RANGO_MAX` FLOAT NOT NULL, `TIPO` TEXT NOT NULL,`DIRECCION` TEXT NOT NULL, `MASCARA` TEXT NOT NULL, `PUERTO` TEXT NOT NULL,`ID_COMM` TEXT NOT NULL,`SERIAL` TEXT NOT NULL,`LINEAR` TEXT NOT NULL, `LATITUD` FLOAT NOT NULL,`LONGITUD` FLOAT NOT NULL,`VELOCIDAD` FLOAT NOT NULL,`MEASURE` FLOAT NOT NULL)"
+    cursor.execute(Query)
+    connection.commit()
+    cursor.close()
+    connection.close()  

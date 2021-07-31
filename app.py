@@ -1,7 +1,8 @@
 from flask import Flask,request,redirect,url_for
 import json
 from flask import render_template,session
-import sqlite3
+import mysql.connector
+from urllib.parse import urlparse
 import json
 import secrets
 import bcrypt
@@ -14,23 +15,29 @@ app.secret_key = secrets.token_urlsafe(20)
 user={ 'email':'','password':'','nombre':'','apellido':'','cargo':'','area':'','empresa':'','rol':''}
 
 def validar_usuario(user):
-    connection=sqlite3.connect('main.db')
-    cursor=connection.cursor()
+    f=open("database.env")
+    dbc = urlparse(f.read())
+    f.close()
+    connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
+    cursor= connection.cursor()
     Query="SELECT PASSWORD FROM `USUARIOS` WHERE email='%(email)s' " % user
     cursor.execute(Query)
     e=cursor.fetchone()
     cursor.close()
     connection.close()    
     try:
-        hashed=e[0]
-        return bcrypt.checkpw(user['password'], hashed)
+        hashed=e[0].encode('UTF-8')
+        return bcrypt.checkpw(user['password'].encode('UTF-8'), hashed)
     except:
         return False
 
 def check_usuario(user):
-    connection=sqlite3.connect('main.db')
+    f=open("database.env")
+    dbc = urlparse(f.read())
+    f.close()
+    connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
     cursor=connection.cursor()
-    Query="SELECT PASSWORD FROM `USUARIOS` WHERE email='%(email)s' " % user
+    Query="SELECT EMAIL FROM `USUARIOS` WHERE email='%(email)s' " % user
     cursor.execute(Query)
     e=cursor.fetchone()
     try:
@@ -42,11 +49,14 @@ def check_usuario(user):
         return False
 
 def save_usuario(user):
-    connection=sqlite3.connect('main.db')
+    f=open("database.env")
+    dbc = urlparse(f.read())
+    f.close()
+    connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
     cursor=connection.cursor()
-    password = user['password']
+    password = user['password'].encode('UTF-8')
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-    user['hashed'] = hashed
+    user['hashed'] = hashed.decode('UTF-8')
     Query="INSERT INTO MAIN_SENSOR.USUARIOS(NOMBRE,APELLIDO,EMAIL,PASSWORD,CARGO, AREA, ROL,EMPRESA) VALUES ('%(nombre)s','%(apellido)s','%(email)s','%(hashed)s','%(cargo)s','%(area)s','%(rol)s','%(empresa)s')" %  user
     print(Query)
     cursor.execute(Query)
@@ -62,13 +72,14 @@ def save_usuario(user):
     return resp
 
 def update_usuario(user):
-    connection=sqlite3.connect('main.db')
+    f=open("database.env")
+    dbc = urlparse(f.read())
+    f.close()
+    connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
     cursor=connection.cursor()
-    password = user['npassword']
+    password = user['npassword'].encode('UTF-8')
     hashed = bcrypt.hashpw(password, bcrypt.gensalt())
-    user['hashed'] = hashed
-    print(hashed)
-    print(user['hashed'])
+    user['hashed'] = hashed.decode('UTF-8')
     Query="UPDATE USUARIOS SET NOMBRE = '%(nombre)s', APELLIDO = '%(apellido)s' , CARGO = '%(cargo)s', PASSWORD = '%(hashed)s', AREA = '%(area)s', EMPRESA = '%(empresa)s', ROL = '%(rol)s' WHERE EMAIL = '%(email)s' " % user
     cursor.execute(Query)
     connection.commit()
@@ -83,7 +94,10 @@ def update_usuario(user):
     return resp
 
 def get_usuario(email):
-    connection=sqlite3.connect('main.db')
+    f=open("database.env")
+    dbc = urlparse(f.read())
+    f.close()
+    connection=mysql.connector.connect (host=dbc.hostname,database=dbc.path.lstrip('/'),user=dbc.username,password=dbc.password)
     cursor=connection.cursor()
     Query="SELECT * FROM `USUARIOS` WHERE email='%s' " % email
     cursor.execute(Query)
