@@ -1,4 +1,4 @@
 Flask
 py-bcrypt
-mysql.conecctor
+mysql.connector
 
