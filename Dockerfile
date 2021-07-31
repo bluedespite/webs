@@ -1,10 +1,8 @@
-FROM python:3.8-slim
+FROM tiangolo/meinheld-gunicorn-flask:python3.7
 
-WORKDIR /usr/src/app
+COPY ./app /app
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
 
 

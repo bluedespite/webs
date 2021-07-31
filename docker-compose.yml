@@ -20,5 +20,9 @@ services:
           MYSQL_ROOT_PASSWORD: 12345
         ports: 
          - "8080:80"
+      appi:
+        build: .
+        ports: 
+          - "80:80"
 volumes:
   db-data:
